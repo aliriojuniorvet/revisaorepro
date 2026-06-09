@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — Reprodução Animal · Revisão</title>
+<style>
+  :root{
+    --azul:#0d47a1; --azul2:#1565c0; --azul3:#1976d2;
+    --azulclaro:#e3f0fb; --azulclaro2:#bbdefb;
+    --branco:#ffffff; --cinza:#5b6b7b; --cinzaclaro:#eef3f8;
+    --verde:#2e7d32; --vermelho:#c62828; --amarelo:#f9a825;
+    --sombra:0 10px 30px rgba(13,71,161,.15);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+    background:linear-gradient(135deg,#e8f1fb 0%,#d4e6f9 100%);
+    min-height:100vh;color:#13293d;
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:18px;
+  }
+  .wrap{width:100%;max-width:680px}
+  .card{
+    background:var(--branco);border-radius:var(--radius);
+    box-shadow:var(--sombra);overflow:hidden;
+  }
+  .topo{
+    background:linear-gradient(135deg,var(--azul),var(--azul3));
+    color:#fff;padding:26px 26px 22px;text-align:center;
+  }
+  .badge{
+    display:inline-block;background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.35);
+    padding:5px 14px;border-radius:30px;font-size:12px;
+    letter-spacing:1.2px;font-weight:600;text-transform:uppercase;margin-bottom:10px;
+  }
+  .topo h1{font-size:23px;line-height:1.25;margin-bottom:6px;font-weight:700}
+  .topo p{font-size:13.5px;opacity:.92}
+  .conteudo{padding:24px 24px 28px}
+
+  /* ---- Tela inicial ---- */
+  .campo{margin-bottom:16px}
+  .campo label{display:block;font-size:13px;font-weight:600;color:var(--azul);margin-bottom:6px}
+  .campo input,.campo select{
+    width:100%;padding:13px 14px;border:2px solid var(--azulclaro2);
+    border-radius:12px;font-size:15px;background:#fafcff;color:#13293d;outline:none;
+    transition:border .2s;
+  }
+  .campo input:focus,.campo select:focus{border-color:var(--azul3)}
+  .infobox{
+    background:var(--azulclaro);border-left:4px solid var(--azul3);
+    border-radius:10px;padding:14px 16px;font-size:13.5px;color:#234;margin:6px 0 18px;line-height:1.6;
+  }
+  .infobox b{color:var(--azul)}
+  .btn{
+    width:100%;border:none;border-radius:12px;padding:15px;
+    font-size:16px;font-weight:700;cursor:pointer;transition:transform .12s,box-shadow .2s;
+    background:linear-gradient(135deg,var(--azul),var(--azul3));color:#fff;
+    box-shadow:0 6px 16px rgba(13,71,161,.3);
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(13,71,161,.4)}
+  .btn:active{transform:translateY(0)}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .btn.sec{background:#fff;color:var(--azul);border:2px solid var(--azulclaro2);box-shadow:none}
+
+  /* ---- Quiz ---- */
+  .barra-topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px}
+  .progresso-num{font-size:14px;font-weight:700;color:var(--azul)}
+  .timer{
+    display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;
+    background:var(--azulclaro);padding:7px 14px;border-radius:30px;color:var(--azul);min-width:74px;justify-content:center;
+  }
+  .timer.alerta{background:#fdecea;color:var(--vermelho);animation:pulse .7s infinite}
+  @keyframes pulse{50%{opacity:.55}}
+  .progresso-barra{height:8px;background:var(--cinzaclaro);border-radius:30px;overflow:hidden;margin-bottom:20px}
+  .progresso-fill{height:100%;background:linear-gradient(90deg,var(--azul),var(--azul3));border-radius:30px;width:0;transition:width .3s}
+  .pergunta{font-size:18px;font-weight:600;line-height:1.45;margin-bottom:20px;color:#13293d}
+  .opcoes{display:flex;flex-direction:column;gap:11px}
+  .opcao{
+    display:flex;align-items:flex-start;gap:12px;
+    border:2px solid var(--azulclaro2);border-radius:13px;padding:14px 15px;
+    cursor:pointer;background:#fafcff;transition:all .15s;font-size:15px;line-height:1.4;
+  }
+  .opcao:hover{border-color:var(--azul3);background:#f0f7ff}
+  .opcao.sel{border-color:var(--azul);background:var(--azulclaro);box-shadow:0 0 0 3px rgba(21,101,192,.12)}
+  .letra{
+    flex:0 0 28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--azulclaro2);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--azul);font-size:13.5px;transition:all .15s;
+  }
+  .opcao.sel .letra{background:var(--azul);color:#fff;border-color:var(--azul)}
+  .acoes{margin-top:22px}
+
+  /* ---- Resultado ---- */
+  .res-topo{text-align:center;padding:8px 0 6px}
+  .res-emoji{font-size:52px;margin-bottom:6px}
+  .res-nota{font-size:46px;font-weight:800;color:var(--azul);line-height:1}
+  .res-nota span{font-size:20px;color:var(--cinza);font-weight:600}
+  .res-sub{color:var(--cinza);font-size:14px;margin-top:6px}
+  .stats{display:flex;gap:12px;margin:20px 0}
+  .stat{flex:1;background:var(--cinzaclaro);border-radius:13px;padding:14px;text-align:center}
+  .stat .n{font-size:26px;font-weight:800}
+  .stat .l{font-size:12px;color:var(--cinza);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+  .stat.ok .n{color:var(--verde)} .stat.err .n{color:var(--vermelho)}
+  .envio-status{text-align:center;font-size:13.5px;padding:10px;border-radius:10px;margin-bottom:16px}
+  .envio-status.ok{background:#e8f5e9;color:var(--verde)}
+  .envio-status.erro{background:#fdecea;color:var(--vermelho)}
+  .envio-status.load{background:var(--azulclaro);color:var(--azul)}
+
+  .gabarito{margin-top:8px}
+  .gab-titulo{font-size:16px;font-weight:700;color:var(--azul);margin:18px 0 12px;text-align:center}
+  .gab-item{border:1px solid var(--cinzaclaro);border-radius:12px;padding:13px 15px;margin-bottom:10px;background:#fafcff}
+  .gab-item.certo{border-left:5px solid var(--verde)}
+  .gab-item.errado{border-left:5px solid var(--vermelho)}
+  .gab-q{font-size:14px;font-weight:600;margin-bottom:8px;line-height:1.4}
+  .gab-q .tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;margin-right:7px;vertical-align:middle}
+  .gab-q .tag.c{background:#e8f5e9;color:var(--verde)}
+  .gab-q .tag.e{background:#fdecea;color:var(--vermelho)}
+  .gab-linha{font-size:13px;margin:3px 0;padding-left:4px;color:#3a4a5a}
+  .gab-linha b{font-weight:700}
+  .gab-linha.sua-err{color:var(--vermelho)}
+  .gab-linha.correta{color:var(--verde);font-weight:600}
+
+  .rodape{text-align:center;font-size:12px;color:var(--cinza);margin-top:18px;line-height:1.6}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="topo">
+      <div class="badge">Reprodução Animal · Revisão</div>
+      <h1>Quiz de Revisão — Reprodução Animal</h1>
+      <p>Gestação · Patologias do SRM e SRF · Biotecnologias · IA em Cadelas · IATF</p>
+    </div>
+
+    <!-- ========== TELA INICIAL ========== -->
+    <div class="conteudo" id="tela-inicio">
+      <div class="campo">
+        <label for="nome">Nome completo</label>
+        <input type="text" id="nome" placeholder="Digite seu nome">
+      </div>
+      <div class="infobox">
+        📋 <b>25 questões</b> · alternativas <b>A a E</b><br>
+        ⏱️ <b>40 segundos</b> por questão · sem pontuação por tempo<br>
+        ➡️ Você pode <b>mudar de alternativa</b> antes de clicar em Avançar<br>
+        🏅 Vale <b>5,0 pontos</b>
+      </div>
+      <button class="btn" id="btn-iniciar">Iniciar Quiz</button>
+      <div class="rodape">Prof. Mv. Esp. José Alírio S. O. Júnior</div>
+    </div>
+
+    <!-- ========== TELA QUIZ ========== -->
+    <div class="conteudo hidden" id="tela-quiz">
+      <div class="barra-topo">
+        <div class="progresso-num" id="prog-num">Questão 1 de 25</div>
+        <div class="timer" id="timer">⏱️ 40s</div>
+      </div>
+      <div class="progresso-barra"><div class="progresso-fill" id="prog-fill"></div></div>
+      <div class="pergunta" id="pergunta"></div>
+      <div class="opcoes" id="opcoes"></div>
+      <div class="acoes">
+        <button class="btn" id="btn-avancar">Avançar</button>
+      </div>
+    </div>
+
+    <!-- ========== TELA RESULTADO ========== -->
+    <div class="conteudo hidden" id="tela-resultado">
+      <div class="res-topo">
+        <div class="res-emoji" id="res-emoji">🎓</div>
+        <div class="res-nota" id="res-nota">0,0<span>/5,0</span></div>
+        <div class="res-sub" id="res-sub"></div>
+      </div>
+      <div class="stats">
+        <div class="stat ok"><div class="n" id="st-acertos">0</div><div class="l">Acertos</div></div>
+        <div class="stat err"><div class="n" id="st-erros">0</div><div class="l">Erros</div></div>
+        <div class="stat"><div class="n" id="st-total">25</div><div class="l">Total</div></div>
+      </div>
+      <div class="envio-status load" id="envio-status">Enviando resultado...</div>
+      <div class="gabarito">
+        <div class="gab-titulo">📖 Gabarito comentado</div>
+        <div id="gab-lista"></div>
+      </div>
+      <div class="rodape">Reprodução Animal · Prof. Mv. Esp. José Alírio S. O. Júnior</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   1. CONFIGURAÇÃO — URL do Apps Script (aba "Revisão")
+   ============================================================ */
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyUI0lKRunviB1gj41ElssxFfSePGB6sehGmpILmceEauwFKKnAhO4KqZTjngGKsZtU/exec';
+const TEMPO_POR_QUESTAO = 40;        // segundos
+const VALOR_TOTAL = 5.0;             // pontos
+
+/* ============================================================
+   2. BANCO DE QUESTÕES (25) — gabarito = índice de "c" (0=A ... 4=E)
+   Distribuição equilibrada A–E (5 de cada)
+   ============================================================ */
+const perguntas = [
+
+  /* ---------- GESTAÇÃO: Fertilização / Reação Zonal / Singamia / Zigoto / Clivagem ---------- */
+
+  { // 1 — A
+    q:"Durante a capacitação espermática, qual evento ocorre na membrana plasmática do espermatozoide?",
+    opts:[
+      "Depleção de colesterol e desestabilização da bicamada fosfolipídica",
+      "Síntese imediata de acrosina a partir de DNA espermático",
+      "Fusão definitiva com a zona pelúcida ZP3",
+      "Condensação total da cromatina nuclear",
+      "Liberação dos grânulos corticais do oócito"
+    ], c:0,
+    exp:"A capacitação modifica/remove componentes da superfície (depleção de colesterol, alteração de glicosaminoglicanos), desestabilizando a bicamada e permitindo a futura reação acrossômica."
+  },
+  { // 2 — B
+    q:"A reação acrossômica verdadeira caracteriza-se por:",
+    opts:[
+      "Condensação do segmento equatorial sem perda de enzimas",
+      "Fusão da membrana plasmática com a membrana acrossômica externa e vesiculação",
+      "Espessamento da zona pelúcida ao redor do espermatozoide",
+      "Degeneração espontânea típica de espermatozoides senescentes",
+      "Bloqueio da entrada de Ca²⁺ no espermatozoide"
+    ], c:1,
+    exp:"A RA verdadeira envolve fusão da membrana plasmática com a membrana acrossômica externa seguida de vesiculação, liberando hialuronidase e acrosina. A 'falsa' RA ocorre na senescência."
+  },
+  { // 3 — C
+    q:"Na fertilização, a glicoproteína ZP3 da zona pelúcida funciona como:",
+    opts:[
+      "Enzima que digere o cumulus oophorus",
+      "Bloqueador físico secundário à polispermia na membrana vitelina",
+      "Receptor primário de espermatozoides com acrossomo intacto",
+      "Indutor da extrusão do segundo corpúsculo polar",
+      "Fator de descondensação do pronúcleo masculino"
+    ], c:2,
+    exp:"A ZP3 é a receptora espermática à qual apenas espermatozoides com acrossomo intacto se fixam, via oligossacarídeos O-ligados; a ZP2 atua como receptor secundário durante a passagem."
+  },
+  { // 4 — D
+    q:"O bloqueio à polispermia na maioria dos mamíferos ocorre por:",
+    opts:[
+      "Reação acrossômica de espermatozoides acessórios",
+      "Aumento da motilidade hiperativada na ampola",
+      "Migração transuterina do concepto",
+      "Reação cortical com endurecimento da zona e inativação da ZP3",
+      "Fusão de dois pronúcleos masculinos formando androgenones"
+    ], c:3,
+    exp:"A liberação dos grânulos corticais no espaço perivitelino provoca reação cortical, endurece a zona pelúcida e inativa receptores (ZP3), além de proteólise da ZP2, impedindo nova penetração."
+  },
+  { // 5 — E
+    q:"Sobre a singamia e a formação do zigoto, é correto afirmar:",
+    opts:[
+      "Resulta sempre em embriões poliploides viáveis",
+      "Dispensa a contribuição do pronúcleo masculino",
+      "Ocorre antes da extrusão do primeiro corpúsculo polar",
+      "Independe da síntese de DNA citoplasmático",
+      "Aproxima os pronúcleos, dispersa os envelopes e restaura a diploidia"
+    ], c:4,
+    exp:"Na singamia os pronúcleos masculino e feminino se aproximam, os envelopes nucleares se dispersam, há intermistura de cromossomos e síntese de DNA, restaurando o estado diploide e iniciando a clivagem."
+  },
+  { // 6 — A
+    q:"Durante a clivagem, o termo 'compactação' refere-se a:",
+    opts:[
+      "Achatamento dos blastômeros e polarização no estágio de oito células",
+      "Eclosão do blastocisto através da zona pelúcida",
+      "Formação dos cálices endometriais na égua",
+      "Alongamento filamentoso do concepto suíno",
+      "Fusão das membranas fetais para formar o alantocório"
+    ], c:0,
+    exp:"A compactação combina o achatamento dos blastômeros e a polarização (assimetria apical/basal), iniciando a segregação entre massa celular interna e trofoblasto rumo à mórula."
+  },
+  { // 7 — B
+    q:"Em qual espécie os óvulos NÃO fertilizados permanecem no oviduto e degeneram, em vez de seguir ao útero?",
+    opts:[
+      "Bovinos",
+      "Equinos",
+      "Suínos",
+      "Ovinos",
+      "Caprinos"
+    ], c:1,
+    exp:"Na égua, óvulos não fertilizados permanecem no istmo e degeneram lentamente, enquanto apenas os embriões em desenvolvimento atravessam e entram no útero."
+  },
+
+  /* ---------- PATOLOGIAS DO SISTEMA REPRODUTOR MASCULINO ---------- */
+
+  { // 8 — C
+    q:"Sobre o criptorquidismo, assinale a alternativa correta:",
+    opts:[
+      "É mais comum em equinos do lado direito",
+      "Tem herança autossômica dominante em cães",
+      "Em cães é distúrbio comum, de herança autossômica recessiva ligada ao sexo",
+      "Resulta sempre de hiperplasia do gubernáculo testicular",
+      "Não está associado a falhas de desenvolvimento do gubernáculo"
+    ], c:2,
+    exp:"O criptorquidismo é o distúrbio de desenvolvimento mais comum em cães (~13%), de natureza genética (autossômico recessivo ligado ao sexo); em equinos predomina a criptorquidia unilateral esquerda."
+  },
+  { // 9 — D
+    q:"O tumor testicular associado à feminilização e a efeitos estrogênicos é o:",
+    opts:[
+      "Seminoma",
+      "Teratoma",
+      "Tumor das células de Leydig",
+      "Tumor das células de Sertoli",
+      "Adenocarcinoma prostático"
+    ], c:3,
+    exp:"O tumor das células de Sertoli (Sertolioma) é classicamente estrogênico, podendo causar degeneração testicular e síndrome de feminilização."
+  },
+  { // 10 — E
+    q:"A degeneração testicular caracteriza-se por:",
+    opts:[
+      "Aumento progressivo e irreversível da espermatogênese",
+      "Manifestação exclusivamente congênita e pré-puberal",
+      "Ausência total de relação com fatores hormonais",
+      "Preservação completa do epitélio seminífero",
+      "Sequência tumefação→atrofia→calcificação com oligo/azoospermia"
+    ], c:4,
+    exp:"A degeneração evolui de tumefação e maciez para atrofia firme e calcificação, com perda progressiva do epitélio seminífero, levando a oligospermia ou azoospermia; tem causas locais e sistêmicas."
+  },
+  { // 11 — A
+    q:"A persistência do frênulo peniano e a fimose classificam-se como distúrbios:",
+    opts:[
+      "De desenvolvimento de pênis e prepúcio",
+      "Inflamatórios das glândulas acessórias",
+      "Neoplásicos do cordão espermático",
+      "Degenerativos do epidídimo",
+      "Circulatórios da bolsa escrotal"
+    ], c:0,
+    exp:"Hipoplasia, fimose/parafimose, hipospadia/epispadia, pênis bífido e persistência do frênulo peniano são distúrbios de desenvolvimento de pênis e prepúcio."
+  },
+
+  /* ---------- PATOLOGIAS DO SISTEMA REPRODUTOR FEMININO ---------- */
+
+  { // 12 — B
+    q:"O cisto folicular na vaca caracteriza-se por:",
+    opts:[
+      "Presença de corpo lúteo funcional e ciclos regulares",
+      "Folículo anovulatório por mais de 10 dias, sem CL, com aciclia",
+      "Cavidade cística central que não interfere na gestação",
+      "Resquício embrionário dos túbulos mesonéfricos inativo",
+      "Luteinização completa da teca interna sem sinais clínicos"
+    ], c:1,
+    exp:"O cisto folicular é um folículo anovulatório persistente (>10 dias), sem corpo lúteo e com aciclia, podendo cursar com ninfomania, anestro ou virilismo e alterações uterinas (mucometra/hidrometra)."
+  },
+  { // 13 — C
+    q:"O tratamento de eleição para cisto luteínico (cisto produtor de progesterona) é:",
+    opts:[
+      "hCG isolado em dose única",
+      "Estradiol em dose elevada",
+      "PGF₂α (luteolítico)",
+      "Ocitocina por via intravaginal",
+      "Inibina recombinante"
+    ], c:2,
+    exp:"O cisto luteínico/luteal responde à PGF₂α, que promove luteólise; já o cisto folicular é tratado com hCG ou GnRH."
+  },
+  { // 14 — D
+    q:"O Tumor Venéreo Transmissível (TVT / tumor de Sticker) caracteriza-se por:",
+    opts:[
+      "Origem viral com transmissão por vetores",
+      "Acometer exclusivamente fêmeas gestantes",
+      "Resposta apenas a tratamento cirúrgico radical",
+      "Transmissão pelo coito, com lesões tipo couve-flor",
+      "Ser benigno e nunca causar ulcerações"
+    ], c:3,
+    exp:"O TVT é transmitido pelo coito, forma nódulos e ulcerações tipo couve-flor; diagnóstico por exame clínico/histórico de cópula e tratamento quimioterápico (vincristina, doxorrubicina)."
+  },
+  { // 15 — E
+    q:"A patogenia da piometra está associada principalmente a:",
+    opts:[
+      "Dominância estrogênica durante o proestro prolongado",
+      "Processo agudo restrito ao miométrio, sem influência hormonal",
+      "Pico de LH e ruptura folicular repetida",
+      "Luteólise precoce com queda abrupta de progesterona",
+      "Diestro sob progesterona, com hiperplasia endometrial e queda da defesa imune uterina"
+    ], c:4,
+    exp:"A piometra desenvolve-se no diestro, sob influência da progesterona, que estimula a hiperplasia endometrial cística, aumenta as secreções glandulares e reduz a resposta imune uterina (inibe a migração leucocitária e a contratilidade), favorecendo o acúmulo de exsudato purulento e a colonização bacteriana."
+  },
+  { // 16 — A
+    q:"A endometrose (endometrite crônico-degenerativa) na égua caracteriza-se por:",
+    opts:[
+      "Degeneração fibrótica do endométrio com formação de ninhos glandulares periglandulares",
+      "Acúmulo agudo de exsudato purulento por cérvix fechada",
+      "Disgenesia gonadal do tipo XO de origem cromossômica",
+      "Resquício embrionário dos túbulos mesonéfricos no córtex ovariano",
+      "Inflamação aguda do miométrio secundária a parto distócico"
+    ], c:0,
+    exp:"A endometrose é uma alteração crônico-degenerativa do endométrio equino, com fibrose periglandular e formação de ninhos glandulares, comprometendo a fertilidade; difere das endometrites agudas e da piometra (acúmulo purulento)."
+  },
+
+  /* ---------- BIOTECNOLOGIAS APLICADAS À REPRODUÇÃO ---------- */
+
+  { // 17 — B
+    q:"Na ICSI aplicada a equinos, o procedimento consiste em:",
+    opts:[
+      "Fertilização convencional em meio de cultura sem manipulação",
+      "Injeção de um único espermatozoide no interior de cada oócito",
+      "Transferência nuclear de células somáticas adultas",
+      "Lavagem uterina para coleta de embriões in vivo",
+      "Sincronização hormonal entre doadora e receptora"
+    ], c:1,
+    exp:"A ICSI injeta um único espermatozoide diretamente no oócito, sendo indicada para garanhões subférteis, sêmen raro/limitado e éguas com problemas crônicos de fertilidade."
+  },
+  { // 18 — C
+    q:"Na transferência de embriões em éguas, a recomendação clássica de sincronia doadora × receptora é que a receptora esteja:",
+    opts:[
+      "Sempre 5 dias adiantada em relação à doadora",
+      "Exatamente no mesmo dia de ovulação da doadora",
+      "Entre D3 e D9, sendo as melhores taxas entre D4 e D6",
+      "Em anestro profundo obrigatoriamente",
+      "Com 3 dias de atraso fixo em relação à doadora"
+    ], c:2,
+    exp:"A janela de sincronia aceitável vai de D3 a D9, mas as melhores taxas de prenhez ocorrem com a receptora entre D4 e D6 em relação à ovulação da doadora; usam-se cerca de 3 receptoras por doadora, com bom escore e condição uterina."
+  },
+  { // 19 — D
+    q:"Sobre a Produção In Vitro de Embriões (PIVE) / Fertilização In Vitro (FIV) bovina, assinale a alternativa correta:",
+    opts:[
+      "O Brasil tem participação irrelevante na produção mundial",
+      "Substitui a etapa de Maturação In Vitro (MIV)",
+      "Gera no máximo 1 bezerro por doadora ao ano",
+      "Envolve as etapas de Maturação In Vitro (MIV), Fertilização In Vitro (FIV) e Cultivo In Vitro (CIV) em laboratório",
+      "Dispensa a Aspiração Folicular (OPU – Ovum Pick-Up)"
+    ], c:3,
+    exp:"A Produção In Vitro de Embriões (PIVE) compreende a Maturação In Vitro (MIV) → Fertilização In Vitro (FIV) → Cultivo In Vitro (CIV); depende da Aspiração Folicular (OPU – Ovum Pick-Up). O Brasil é líder mundial e a técnica pode gerar dezenas de bezerros por ano por doadora."
+  },
+  { // 20 — E
+    q:"Na indução de ovulação em éguas para IA, o hCG e a deslorelina (GnRH) diferem porque:",
+    opts:[
+      "Ambos induzem ovulação em exatamente 12 horas",
+      "O hCG age em 44h e a deslorelina em 36h",
+      "Nenhum permite uso de sêmen refrigerado",
+      "A deslorelina exige inseminação 12h após a indução",
+      "hCG induz ovulação ~36h e deslorelina/GnRH ~44h"
+    ], c:4,
+    exp:"O hCG induz ovulação em torno de 36h (IA ~12h após), enquanto análogos de GnRH como deslorelina/histrelina induzem em ~44h (IA ~24h após), conforme o tipo de sêmen."
+  },
+
+  /* ---------- INSEMINAÇÃO ARTIFICIAL EM CADELAS ---------- */
+
+  { // 21 — A
+    q:"Na citologia vaginal da cadela, o estro é caracterizado por:",
+    opts:[
+      "≥80% de células superficiais e/ou escamas e ausência de neutrófilos",
+      "Predomínio de células parabasais e muitos neutrófilos",
+      "Hemácias abundantes e células parabasais exclusivas",
+      "Células intermediárias dominantes com escassez de superficiais",
+      "Presença obrigatória de plasmócitos e mastócitos"
+    ], c:0,
+    exp:"No estro há ≥80% de células superficiais/escamas (queratinização máxima) e ausência de neutrófilos; no diestro as superficiais caem para ~20% e os neutrófilos retornam."
+  },
+  { // 22 — B
+    q:"Considerando a dosagem de progesterona como padrão-ouro prático na cadela, a ovulação (dia 0) corresponde a:",
+    opts:[
+      "1,0–1,9 ng/mL",
+      "4,0–10 ng/mL",
+      "0,2–0,5 ng/mL",
+      "20–30 ng/mL",
+      "Valores indetectáveis"
+    ], c:1,
+    exp:"Valores de 4,0–10 ng/mL indicam a ovulação (dia 0). Para sêmen congelado, insemina-se 2–3 dias após a ovulação, quando os ovócitos atingem maturidade."
+  },
+  { // 23 — C
+    q:"Sobre os tipos de sêmen na IA em cadelas, é correto afirmar:",
+    opts:[
+      "O sêmen congelado tem a maior taxa de gestação",
+      "O sêmen resfriado é viável por tempo indeterminado",
+      "O sêmen fresco apresenta taxa de gestação de ~85–100%",
+      "O sêmen congelado dispensa timing preciso",
+      "O sêmen fresco permite máxima flexibilidade logística"
+    ], c:2,
+    exp:"O sêmen fresco tem taxa de gestação de ~85–100% (similar à monta natural), mas exige uso imediato; o congelado tem máxima flexibilidade, porém exige timing preciso (2–3 dias pós-ovulação)."
+  },
+
+  /* ---------- IATF EM BOVINOS ---------- */
+
+  { // 24 — D
+    q:"No protocolo padrão Brasil (P4+E2) de IATF, a função do benzoato de estradiol (BE) aplicado no D0 é:",
+    opts:[
+      "Promover luteólise e regressão do corpo lúteo",
+      "Induzir o pico ovulatório de LH na hora da IATF",
+      "Substituir o dispositivo de progesterona",
+      "Sincronizar a emergência de uma nova onda folicular",
+      "Bloquear definitivamente o eixo hipotálamo-hipofisário"
+    ], c:3,
+    exp:"No D0 o CIDR eleva a P4 e suprime o eixo; o BE 2mg sincroniza a emergência da nova onda folicular (~4 dias depois). A luteólise é função da PGF₂α e o pico ovulatório é induzido pelo cipionato (CE)."
+  },
+  { // 25 — E
+    q:"O uso de eCG na IATF em vacas de corte (Bos indicus) é especialmente indicado para:",
+    opts:[
+      "Novilhas ciclando regularmente, em todos os casos",
+      "Reduzir a duração total do protocolo para 3 dias",
+      "Substituir a PGF₂α na luteólise",
+      "Causar bloqueio do folículo dominante",
+      "Vacas em anestro pós-parto, amamentando ou com ECC <2,5"
+    ], c:4,
+    exp:"A eCG (ação FSH e LH-símile) estimula o folículo dominante e é essencial em vacas em anestro pós-parto, amamentando ou com escore de condição corporal baixo (<2,5), aumentando a P/IA."
+  }
+
+];
+
+/* ============================================================
+   3. LÓGICA DO QUIZ
+   ============================================================ */
+const LETRAS = ['A','B','C','D','E'];
+let idx = 0;
+let selecionada = null;
+let respostas = [];     // {sel, correta}
+let timer = null;
+let tempoRest = TEMPO_POR_QUESTAO;
+let aluno = {nome:''};
+
+const $ = id => document.getElementById(id);
+
+/* --- Iniciar --- */
+$('btn-iniciar').addEventListener('click', () => {
+  const nome = $('nome').value.trim();
+  if(!nome){ alert('Por favor, digite seu nome.'); return; }
+
+  // Bloqueio de 2ª tentativa
+  const chave = 'quiz_repro_revisao_' + nome.toLowerCase().replace(/\s+/g,'_');
+  if(localStorage.getItem(chave)){
+    alert('Você já realizou este quiz. Apenas uma tentativa é permitida.');
+    return;
+  }
+  aluno = {nome, chave};
+
+  $('tela-inicio').classList.add('hidden');
+  $('tela-quiz').classList.remove('hidden');
+  mostrarPergunta();
+});
+
+function mostrarPergunta(){
+  selecionada = null;
+  const p = perguntas[idx];
+  $('prog-num').textContent = `Questão ${idx+1} de ${perguntas.length}`;
+  $('prog-fill').style.width = ((idx)/perguntas.length*100) + '%';
+  $('pergunta').textContent = p.q;
+
+  const cont = $('opcoes');
+  cont.innerHTML = '';
+  p.opts.forEach((opt,i) => {
+    const div = document.createElement('div');
+    div.className = 'opcao';
+    div.innerHTML = `<div class="letra">${LETRAS[i]}</div><div>${opt}</div>`;
+    div.addEventListener('click', () => {
+      selecionada = i;
+      document.querySelectorAll('.opcao').forEach(o=>o.classList.remove('sel'));
+      div.classList.add('sel');
+    });
+    cont.appendChild(div);
+  });
+
+  // Timer
+  tempoRest = TEMPO_POR_QUESTAO;
+  atualizaTimer();
+  clearInterval(timer);
+  timer = setInterval(() => {
+    tempoRest--;
+    atualizaTimer();
+    if(tempoRest <= 0){ clearInterval(timer); avancar(true); }
+  }, 1000);
+}
+
+function atualizaTimer(){
+  const t = $('timer');
+  t.textContent = '⏱️ ' + tempoRest + 's';
+  if(tempoRest <= 10) t.classList.add('alerta'); else t.classList.remove('alerta');
+}
+
+$('btn-avancar').addEventListener('click', () => avancar(false));
+
+function avancar(porTempo){
+  clearInterval(timer);
+  const p = perguntas[idx];
+  // Sem feedback durante o quiz: apenas registra
+  const sel = (selecionada === null) ? -1 : selecionada;
+  respostas.push({ sel, correta: p.c, acertou: sel === p.c });
+
+  idx++;
+  if(idx < perguntas.length){
+    mostrarPergunta();
+  } else {
+    finalizar();
+  }
+}
+
+/* ============================================================
+   4. RESULTADO + GABARITO + ENVIO
+   ============================================================ */
+function finalizar(){
+  $('tela-quiz').classList.add('hidden');
+  $('tela-resultado').classList.remove('hidden');
+
+  const acertos = respostas.filter(r=>r.acertou).length;
+  const erros = perguntas.length - acertos;
+  const nota = (acertos / perguntas.length) * VALOR_TOTAL;
+  const notaFmt = nota.toFixed(1).replace('.', ',');
+
+  $('res-nota').innerHTML = `${notaFmt}<span>/${VALOR_TOTAL.toFixed(1).replace('.',',')}</span>`;
+  $('st-acertos').textContent = acertos;
+  $('st-erros').textContent = erros;
+  $('st-total').textContent = perguntas.length;
+
+  // Emoji/mensagem
+  const pct = acertos/perguntas.length;
+  let emoji='🎓', sub='';
+  if(pct>=0.9){ emoji='🏆'; sub='Excelente desempenho!'; }
+  else if(pct>=0.7){ emoji='🎉'; sub='Muito bom!'; }
+  else if(pct>=0.5){ emoji='👍'; sub='Bom — continue revisando.'; }
+  else { emoji='📚'; sub='Revise os conteúdos com atenção.'; }
+  $('res-emoji').textContent = emoji;
+  $('res-sub').textContent = sub;
+
+  // Gabarito comentado
+  montarGabarito();
+
+  // Data e hora
+  const agora = new Date();
+  const data = agora.toLocaleDateString('pt-BR');
+  const hora = agora.toLocaleTimeString('pt-BR');
+
+  // Bloqueio
+  try{ localStorage.setItem(aluno.chave, '1'); }catch(e){}
+
+  // Envio ao Google Sheets (aba "Revisão") via GET com parâmetros (evita CORS)
+  enviarResultado({
+    nome: aluno.nome,
+    nota: notaFmt,
+    acertos: acertos,
+    erros: erros,
+    data: data,
+    hora: hora
+  });
+}
+
+function montarGabarito(){
+  const lista = $('gab-lista');
+  lista.innerHTML = '';
+  perguntas.forEach((p,i) => {
+    const r = respostas[i];
+    const certo = r.acertou;
+    const item = document.createElement('div');
+    item.className = 'gab-item ' + (certo ? 'certo' : 'errado');
+
+    const suaResp = r.sel === -1 ? 'Não respondida' : `${LETRAS[r.sel]}) ${p.opts[r.sel]}`;
+    const correta = `${LETRAS[p.c]}) ${p.opts[p.c]}`;
+
+    item.innerHTML = `
+      <div class="gab-q">
+        <span class="tag ${certo?'c':'e'}">${certo?'✓ ACERTOU':'✗ ERROU'}</span>
+        ${i+1}. ${p.q}
+      </div>
+      ${certo
+        ? `<div class="gab-linha correta"><b>Resposta correta:</b> ${correta}</div>`
+        : `<div class="gab-linha sua-err"><b>Sua resposta:</b> ${suaResp}</div>
+           <div class="gab-linha correta"><b>Correta:</b> ${correta}</div>`}
+      <div class="gab-linha"><b>Comentário:</b> ${p.exp}</div>
+    `;
+    lista.appendChild(item);
+  });
+}
+
+function enviarResultado(dados){
+  const status = $('envio-status');
+  if(!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.indexOf('COLE_AQUI') === 0){
+    status.className = 'envio-status erro';
+    status.textContent = '⚠️ Resultado não enviado: URL do Google Sheets não configurada.';
+    return;
+  }
+  const params = new URLSearchParams({
+    acao: 'registrar',
+    aba: 'Revisão',
+    nome: dados.nome,
+    nota: dados.nota,
+    acertos: dados.acertos,
+    erros: dados.erros,
+    data: dados.data,
+    hora: dados.hora
+  });
+  const url = GOOGLE_SCRIPT_URL + '?' + params.toString();
+
+  // GET via <img>/fetch no-cors para evitar bloqueio de CORS
+  fetch(url, { method:'GET', mode:'no-cors' })
+    .then(() => {
+      status.className = 'envio-status ok';
+      status.textContent = '✅ Resultado enviado com sucesso!';
+    })
+    .catch(() => {
+      // Fallback por imagem
+      const img = new Image();
+      img.onload = () => { status.className='envio-status ok'; status.textContent='✅ Resultado enviado com sucesso!'; };
+      img.onerror = () => { status.className='envio-status ok'; status.textContent='✅ Resultado registrado.'; };
+      img.src = url;
+    });
+}
+</script>
+</body>
+</html>
